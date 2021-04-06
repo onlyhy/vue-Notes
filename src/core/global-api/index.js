@@ -50,17 +50,21 @@ export function initGlobalAPI (Vue: GlobalAPI) {
     observe(obj)
     return obj
   }
-
+  
+  {/* 在Vue类上创建了options属性
+      ASSET_TYPES中有component、directive、filter
+  */}
   Vue.options = Object.create(null)
   ASSET_TYPES.forEach(type => {
+    /* 在options中添加属性 */
     Vue.options[type + 's'] = Object.create(null)
   })
 
   // this is used to identify the "base" constructor to extend all plain-object
   // components with in Weex's multi-instance scenarios.
   Vue.options._base = Vue
-  // 把一些内置组件扩展到Vue.options.components上
-  // 内置组件：<keep-alive>、<transition> 和<transition-group></transition-group>(这几个组件使用时不需要注册的原因)
+{/*    把一些内置组件扩展到Vue.options.components上
+   内置组件：<keep-alive>、<transition> 和<transition-group></transition-group>(这几个组件使用时不需要注册的原因) */}
   extend(Vue.options.components, builtInComponents)
 
   initUse(Vue)
