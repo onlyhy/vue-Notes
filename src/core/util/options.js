@@ -442,24 +442,32 @@ export function mergeOptions (
  * to assets defined in its ancestor chain.
  */
 export function resolveAsset (
-  options: Object,
-  type: string,
-  id: string,
+  options: Object, //当前实例的$options属性
+  type: string,  // type为filters
+  id: string,   // 当前过滤器的id
   warnMissing?: boolean
 ): any {
   /* istanbul ignore if */
+  // 当前过滤器的名称id是否为字符串类型，如果不是，则直接退出程序
   if (typeof id !== 'string') {
     return
   }
+  // 获取当前实例的 $options 属性中所有的过滤器（不管是何种方法定义的过滤器，都可在$options中的filters属性中获取到）
   const assets = options[type]
   // check local registration variations first
+  // 根据过滤器id取出对应的过滤器函数
+  // 先从本地注册中查找
   if (hasOwn(assets, id)) return assets[id]
+  // 将id装维驼峰式再次查找
   const camelizedId = camelize(id)
   if (hasOwn(assets, camelizedId)) return assets[camelizedId]
+  // 将id转化成首字母大写后再次查找
   const PascalCaseId = capitalize(camelizedId)
   if (hasOwn(assets, PascalCaseId)) return assets[PascalCaseId]
   // fallback to prototype chain
+  // 再从原型链中查找
   const res = assets[id] || assets[camelizedId] || assets[PascalCaseId]
+  // 仍旧不存在，非生产环境下抛出警告
   if (process.env.NODE_ENV !== 'production' && warnMissing && !res) {
     warn(
       'Failed to resolve ' + type.slice(0, -1) + ': ' + id,

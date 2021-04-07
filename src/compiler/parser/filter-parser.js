@@ -1,18 +1,39 @@
 /* @flow */
 
 const validDivisionCharRE = /[\w).+\-_$\]]/
-
+/*
+  该函数的作用的是将传入的形如'message | capitalize'这样的过滤器字符串转化成_f("capitalize")(message) 
+ */
 export function parseFilters (exp: string): string {
-  let inSingle = false
-  let inDouble = false
-  let inTemplateString = false
-  let inRegex = false
-  let curly = 0
-  let square = 0
-  let paren = 0
-  let lastFilterIndex = 0
-  let c, prev, i, expression, filters
 
+  let inSingle = false                     // exp是否在 '' 中
+  let inDouble = false                     // exp是否在 "" 中
+  let inTemplateString = false             // exp是否在 `` 中
+  let inRegex = false                      // exp是否在 \\ 中
+  let curly = 0                            // 在exp中发现一个 { 则curly加1，发现一个 } 则curly减1，直到curly为0 说明 { ... }闭合
+  let square = 0                           // 在exp中发现一个 [ 则square加1，发现一个 ] 则square减1，直到square为0 说明 [ ... ]闭合
+  let paren = 0                            // 在exp中发现一个 ( 则paren加1，发现一个 ) 则paren减1，直到paren为0 说明 ( ... )闭合
+  let lastFilterIndex = 0                  // 解析游标，每循环过一个字符串游标加1
+  let c, prev, i, expression, filters
+/* 
+  从头开始遍历传入的exp每一个字符，通过判断每一个字符是否是特殊字符如',",{,},[,],(,),\,|），
+  进而判断出exp字符串中哪些部分是表达式，哪些部分是过滤器id
+*/
+/*
+  ASCII码与字符的对应关系：
+  0x22 ----- "
+  0x27 ----- '
+  0x28 ----- (
+  0x29 ----- )
+  0x2f ----- /
+  0x5C ----- \
+  0x5B ----- [
+  0x5D ----- ]
+  0x60 ----- `
+  0x7C ----- |
+  0x7B ----- {
+  0x7D ----- }
+*/
   for (i = 0; i < exp.length; i++) {
     prev = c
     c = exp.charCodeAt(i)
@@ -85,12 +106,15 @@ export function parseFilters (exp: string): string {
 }
 
 function wrapFilter (exp: string, filter: string): string {
+  // 在过滤器中查找是否有(，用来判断过滤器中是否接收了参数
   const i = filter.indexOf('(')
   if (i < 0) {
     // _f: resolveFilter
     return `_f("${filter}")(${exp})`
   } else {
+    // 取出过滤器id
     const name = filter.slice(0, i)
+    // 取出参数
     const args = filter.slice(i + 1)
     return `_f("${name}")(${exp}${args !== ')' ? ',' + args : args}`
   }

@@ -53,6 +53,7 @@ export function parseText (
     }
     // tag token
     // 取出'{{ }}'中间的变量exp
+    // 解析写在双花括号中的过滤器
     const exp = parseFilters(match[1].trim())
     // 把变量exp改成_s(exp)形式也放入tokens中
     tokens.push(`_s(${exp})`)
